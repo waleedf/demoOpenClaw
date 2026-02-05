@@ -10,6 +10,7 @@ RUN apt-get update \
     procps \
     python3 \
     build-essential \
+    su-exec \
   && rm -rf /var/lib/apt/lists/*
 
 # Install OpenClaw globally
@@ -20,8 +21,10 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile --prod
 
-# Copy wrapper server source
+# Copy wrapper server source and entrypoint
 COPY src ./src
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Create openclaw user and directories
 RUN useradd -m -s /bin/bash openclaw \
@@ -53,6 +56,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s \
   CMD curl -f http://localhost:8080/setup/healthz || exit 1
 
-# Switch to openclaw user and start wrapper server
-USER openclaw
-CMD ["node", "src/server.js"]
+# Use entrypoint to handle permissions and start server
+CMD ["/entrypoint.sh"]
