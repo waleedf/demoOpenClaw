@@ -10,7 +10,7 @@ RUN apt-get update \
     procps \
     python3 \
     build-essential \
-    su-exec \
+    gosu \
   && rm -rf /var/lib/apt/lists/*
 
 # Install OpenClaw globally
