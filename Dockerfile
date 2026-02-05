@@ -1,4 +1,4 @@
-# OpenClaw Railway Deployment
+# OpenClaw Railway Deployment (using wrapper server approach)
 FROM node:22-bookworm
 
 # Install system dependencies
@@ -15,38 +15,44 @@ RUN apt-get update \
 # Install OpenClaw globally
 RUN npm install -g openclaw@latest
 
+# Set up wrapper server
+WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile --prod
+
+# Copy wrapper server source
+COPY src ./src
+
 # Create openclaw user and directories
 RUN useradd -m -s /bin/bash openclaw \
+  && chown -R openclaw:openclaw /app \
   && mkdir -p /data/.openclaw /data/workspace/skills \
   && chown -R openclaw:openclaw /data
 
-# Copy OpenClaw configuration
-COPY --chown=openclaw:openclaw openclaw-config.json /data/.openclaw/openclaw.json
-
 # Copy crypto-trader skill
-WORKDIR /data/workspace/skills
-COPY --chown=openclaw:openclaw skills/crypto-trader ./crypto-trader
+COPY --chown=openclaw:openclaw skills/crypto-trader /data/workspace/skills/crypto-trader
 
 # Install skill dependencies
 WORKDIR /data/workspace/skills/crypto-trader
 RUN npm install --production
 
-# Set environment variables
+# Back to app directory
+WORKDIR /app
+
+# Environment variables
+ENV PORT=8080
+ENV OPENCLAW_ENTRY=/usr/local/lib/node_modules/openclaw/dist/entry.js
 ENV OPENCLAW_STATE_DIR=/data/.openclaw
 ENV OPENCLAW_WORKSPACE_DIR=/data/workspace
-ENV PORT=8080
-ENV INTERNAL_GATEWAY_PORT=18789
+ENV ANTHROPIC_MODEL=claude-3-5-haiku-20241022
 
-# Expose ports
-EXPOSE 8080 18789
+# Expose port
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s \
-  CMD curl -f http://localhost:18789/health || exit 1
+  CMD curl -f http://localhost:8080/setup/healthz || exit 1
 
-# Switch to openclaw user
+# Switch to openclaw user and start wrapper server
 USER openclaw
-WORKDIR /data
-
-# Start OpenClaw gateway directly via Node (bypass systemctl)
-CMD ["node", "/usr/local/lib/node_modules/openclaw/dist/entry.js", "gateway", "start", "--port", "18789", "--bind", "lan", "--allow-unconfigured"]
+CMD ["node", "src/server.js"]

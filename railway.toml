@@ -3,14 +3,14 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "node /usr/local/lib/node_modules/openclaw/dist/entry.js gateway start --port $PORT --bind lan --allow-unconfigured"
-healthcheckPath = "/"
+startCommand = "node src/server.js"
+healthcheckPath = "/setup/healthz"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10
 
 [deploy.env]
-PORT = "18789"
+PORT = "8080"
 OPENCLAW_STATE_DIR = "/data/.openclaw"
 OPENCLAW_WORKSPACE_DIR = "/data/workspace"
 ANTHROPIC_MODEL = "claude-3-5-haiku-20241022"
