@@ -1,7 +1,5 @@
-# OpenClaw Railway Deployment (using wrapper server approach)
 FROM node:22-bookworm
 
-# Install system dependencies
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -10,52 +8,31 @@ RUN apt-get update \
     procps \
     python3 \
     build-essential \
-    gosu \
   && rm -rf /var/lib/apt/lists/*
 
-# Install OpenClaw globally
 RUN npm install -g openclaw@latest
 
-# Set up wrapper server
 WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile --prod
 
-# Copy wrapper server source, config, and entrypoint
 COPY src ./src
-COPY openclaw.json /app/openclaw.json
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
 
-# Create openclaw user and directories
 RUN useradd -m -s /bin/bash openclaw \
   && chown -R openclaw:openclaw /app \
-  && mkdir -p /data/.openclaw /data/workspace/skills \
-  && chown -R openclaw:openclaw /data
+  && mkdir -p /data /data/workspace/skills && chown -R openclaw:openclaw /data
 
 # Copy crypto-trader skill
 COPY --chown=openclaw:openclaw skills/crypto-trader /data/workspace/skills/crypto-trader
+RUN cd /data/workspace/skills/crypto-trader && npm install --production
 
-# Install skill dependencies
-WORKDIR /data/workspace/skills/crypto-trader
-RUN npm install --production
-
-# Back to app directory
-WORKDIR /app
-
-# Environment variables
-ENV PORT=18789
+ENV PORT=8080
 ENV OPENCLAW_ENTRY=/usr/local/lib/node_modules/openclaw/dist/entry.js
-ENV OPENCLAW_STATE_DIR=/data/.openclaw
-ENV OPENCLAW_WORKSPACE_DIR=/data/workspace
-ENV ANTHROPIC_MODEL=claude-3-5-haiku-20241022
+EXPOSE 8080
 
-# Expose port
-EXPOSE 18789
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
+  CMD curl -f http://localhost:8080/setup/healthz || exit 1
 
-# Health check - check if gateway is responding
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s \
-  CMD ps aux | grep -v grep | grep "openclaw" || exit 1
-
-# Use entrypoint to handle permissions and start server
-CMD ["/entrypoint.sh"]
+USER openclaw
+CMD ["node", "src/server.js"]
