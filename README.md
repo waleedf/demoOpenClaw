@@ -12,6 +12,7 @@ OpenClaw is an open-source autonomous AI personal assistant that runs locally an
 2. Run onboarding: `openclaw onboard --install-daemon`
 3. Configure your Claude API key
 4. Start the gateway
+5. (Optional) Set up Telegram bot - see [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md)
 
 ## Configuration
 

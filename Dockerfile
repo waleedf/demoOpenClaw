@@ -20,6 +20,9 @@ RUN useradd -m -s /bin/bash openclaw \
   && mkdir -p /data/.openclaw /data/workspace/skills \
   && chown -R openclaw:openclaw /data
 
+# Copy OpenClaw configuration
+COPY --chown=openclaw:openclaw openclaw-config.json /data/.openclaw/openclaw.json
+
 # Copy crypto-trader skill
 WORKDIR /data/workspace/skills
 COPY --chown=openclaw:openclaw skills/crypto-trader ./crypto-trader

@@ -13,3 +13,4 @@ restartPolicyMaxRetries = 10
 PORT = "18789"
 OPENCLAW_STATE_DIR = "/data/.openclaw"
 OPENCLAW_WORKSPACE_DIR = "/data/workspace"
+ANTHROPIC_MODEL = "claude-3-5-haiku-20241022"
