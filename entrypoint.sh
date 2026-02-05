@@ -1,14 +1,32 @@
 #!/bin/bash
 set -e
 
-# Ensure directories exist with correct permissions
+# Setup directories
 mkdir -p /data/.openclaw /data/workspace/skills /data/.openclaw/credentials
 
-# Always overwrite config to ensure it's up to date
-cp /app/openclaw.json /data/.openclaw/openclaw.json
+# Create absolute minimal config
+cat > /data/.openclaw/openclaw.json << 'EOF'
+{
+  "gateway": {
+    "mode": "local"
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true
+    }
+  }
+}
+EOF
 
 chown -R openclaw:openclaw /data
 
-# Start OpenClaw gateway directly as openclaw user
+# Start gateway as openclaw user with explicit settings
 cd /data
-exec gosu openclaw node /usr/local/lib/node_modules/openclaw/dist/entry.js gateway start --port 18789 --bind lan
+exec gosu openclaw env \
+  ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}" \
+  TELEGRAM_BOT_TOKEN="${TELEGRAM_BOT_TOKEN}" \
+  ANTHROPIC_MODEL="${ANTHROPIC_MODEL}" \
+  node /usr/local/lib/node_modules/openclaw/dist/entry.js gateway start \
+  --port 18789 \
+  --bind lan \
+  --allow-unconfigured
