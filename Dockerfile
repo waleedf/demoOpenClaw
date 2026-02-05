@@ -21,8 +21,9 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile --prod
 
-# Copy wrapper server source and entrypoint
+# Copy wrapper server source, config, and entrypoint
 COPY src ./src
+COPY openclaw.json /app/openclaw.json
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

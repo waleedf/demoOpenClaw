@@ -1,0 +1,21 @@
+{
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "enabled": true
+    }
+  },
+  "providers": {
+    "anthropic": {
+      "apiKey": "${ANTHROPIC_API_KEY}",
+      "defaultModel": "claude-3-5-haiku-20241022"
+    }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "mode": "polling",
+      "token": "${TELEGRAM_BOT_TOKEN}"
+    }
+  }
+}
