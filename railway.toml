@@ -3,7 +3,7 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "openclaw gateway start --port $PORT --bind lan --allow-unconfigured"
+startCommand = "node /usr/local/lib/node_modules/openclaw/dist/entry.js gateway start --port $PORT --bind lan --allow-unconfigured"
 healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"

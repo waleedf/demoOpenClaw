@@ -48,5 +48,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s \
 USER openclaw
 WORKDIR /data
 
-# Start OpenClaw gateway
-CMD ["openclaw", "gateway", "start", "--port", "18789", "--bind", "lan", "--allow-unconfigured"]
+# Start OpenClaw gateway directly via Node (bypass systemctl)
+CMD ["node", "/usr/local/lib/node_modules/openclaw/dist/entry.js", "gateway", "start", "--port", "18789", "--bind", "lan", "--allow-unconfigured"]
