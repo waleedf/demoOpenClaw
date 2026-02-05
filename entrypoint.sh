@@ -2,7 +2,7 @@
 set -e
 
 # Ensure directories exist with correct permissions
-mkdir -p /data/.openclaw /data/workspace/skills
+mkdir -p /data/.openclaw /data/workspace/skills /data/.openclaw/credentials
 
 # Copy config if it doesn't exist
 if [ ! -f /data/.openclaw/openclaw.json ]; then
@@ -11,5 +11,6 @@ fi
 
 chown -R openclaw:openclaw /data
 
-# Switch to openclaw user and run the server
-exec gosu openclaw node src/server.js
+# Start OpenClaw gateway directly as openclaw user
+cd /data
+exec gosu openclaw node /usr/local/lib/node_modules/openclaw/dist/entry.js gateway start --port 18789 --bind lan
