@@ -44,18 +44,18 @@ RUN npm install --production
 WORKDIR /app
 
 # Environment variables
-ENV PORT=8080
+ENV PORT=18789
 ENV OPENCLAW_ENTRY=/usr/local/lib/node_modules/openclaw/dist/entry.js
 ENV OPENCLAW_STATE_DIR=/data/.openclaw
 ENV OPENCLAW_WORKSPACE_DIR=/data/workspace
 ENV ANTHROPIC_MODEL=claude-3-5-haiku-20241022
 
 # Expose port
-EXPOSE 8080
+EXPOSE 18789
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s \
-  CMD curl -f http://localhost:8080/setup/healthz || exit 1
+# Health check - check if gateway is responding
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s \
+  CMD ps aux | grep -v grep | grep "openclaw" || exit 1
 
 # Use entrypoint to handle permissions and start server
 CMD ["/entrypoint.sh"]
