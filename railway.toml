@@ -3,8 +3,8 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "openclaw gateway start --host 0.0.0.0 --port $PORT"
-healthcheckPath = "/health"
+startCommand = "openclaw gateway start --port $PORT --bind lan --allow-unconfigured"
+healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10

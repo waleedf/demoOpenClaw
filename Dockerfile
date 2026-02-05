@@ -46,4 +46,4 @@ USER openclaw
 WORKDIR /data
 
 # Start OpenClaw gateway
-CMD ["openclaw", "gateway", "start", "--host", "0.0.0.0", "--port", "18789"]
+CMD ["openclaw", "gateway", "start", "--port", "18789", "--bind", "lan", "--allow-unconfigured"]
