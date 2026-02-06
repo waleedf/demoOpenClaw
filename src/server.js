@@ -167,6 +167,12 @@ function ensureConfigDefaults() {
       cfg.gateway.trustedProxies = ["127.0.0.1"];
       changed = true;
     }
+    if (!cfg.gateway.auth) cfg.gateway.auth = {};
+    if (cfg.gateway.auth.mode !== "token" || cfg.gateway.auth.token !== OPENCLAW_GATEWAY_TOKEN) {
+      cfg.gateway.auth.mode = "token";
+      cfg.gateway.auth.token = OPENCLAW_GATEWAY_TOKEN;
+      changed = true;
+    }
 
     if (changed) {
       fs.writeFileSync(cfgFile, JSON.stringify(cfg, null, 2), "utf8");
