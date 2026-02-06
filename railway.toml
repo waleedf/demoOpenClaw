@@ -9,3 +9,5 @@ restartPolicyType = "on_failure"
 
 [deploy.env]
 PORT = "8080"
+OPENCLAW_STATE_DIR = "/data/.openclaw"
+OPENCLAW_WORKSPACE_DIR = "/data/workspace"
