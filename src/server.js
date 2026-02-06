@@ -173,6 +173,12 @@ function ensureConfigDefaults() {
       cfg.gateway.auth.token = OPENCLAW_GATEWAY_TOKEN;
       changed = true;
     }
+    if (!cfg.agents) cfg.agents = {};
+    if (!cfg.agents.defaults) cfg.agents.defaults = {};
+    if (cfg.agents.defaults.workspace !== WORKSPACE_DIR) {
+      cfg.agents.defaults.workspace = WORKSPACE_DIR;
+      changed = true;
+    }
 
     if (changed) {
       fs.writeFileSync(cfgFile, JSON.stringify(cfg, null, 2), "utf8");
@@ -1018,6 +1024,7 @@ function ensureConfigExists() {
         trustedProxies: ["127.0.0.1"],
       },
       channels: { telegram: { enabled: true } },
+      agents: { defaults: { workspace: WORKSPACE_DIR } },
     }, null, 2), "utf8");
   }
 }
