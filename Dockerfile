@@ -23,9 +23,9 @@ RUN useradd -m -s /bin/bash openclaw \
   && chown -R openclaw:openclaw /app \
   && mkdir -p /data /data/workspace/skills && chown -R openclaw:openclaw /data
 
-# Copy crypto-trader skill
-COPY --chown=openclaw:openclaw skills/crypto-trader /data/workspace/skills/crypto-trader
-RUN cd /data/workspace/skills/crypto-trader && npm install --production
+# Stage skills in image (not on volume mount) so they can be copied at startup
+COPY --chown=openclaw:openclaw skills /app/bundled-skills
+RUN cd /app/bundled-skills/crypto-trader && npm install --production
 
 ENV PORT=8080
 ENV OPENCLAW_ENTRY=/usr/local/lib/node_modules/openclaw/dist/entry.js

@@ -972,6 +972,25 @@ app.use(async (req, res) => {
   return proxy.web(req, res, { target: GATEWAY_TARGET });
 });
 
+function syncBundledSkills() {
+  const bundledDir = path.join(process.cwd(), "bundled-skills");
+  const skillsDir = path.join(WORKSPACE_DIR, "skills");
+  if (!fs.existsSync(bundledDir)) return;
+
+  fs.mkdirSync(skillsDir, { recursive: true });
+  for (const name of fs.readdirSync(bundledDir)) {
+    const src = path.join(bundledDir, name);
+    const dest = path.join(skillsDir, name);
+    if (!fs.statSync(src).isDirectory()) continue;
+    if (fs.existsSync(dest)) {
+      console.log(`[skills] ${name} already on volume, skipping`);
+      continue;
+    }
+    console.log(`[skills] copying ${name} to volume`);
+    fs.cpSync(src, dest, { recursive: true });
+  }
+}
+
 function ensureConfigExists() {
   const cfgFile = configPath();
   if (!fs.existsSync(cfgFile)) {
@@ -990,8 +1009,10 @@ function ensureConfigExists() {
 
 const server = app.listen(PORT, () => {
   console.log(`[wrapper] STATE_DIR: ${STATE_DIR}`);
+  console.log(`[wrapper] WORKSPACE_DIR: ${WORKSPACE_DIR}`);
   console.log(`[wrapper] config path: ${configPath()}`);
   ensureConfigExists();
+  syncBundledSkills();
 
   console.log(`[wrapper] listening on port ${PORT}`);
   console.log(`[wrapper] setup wizard: http://localhost:${PORT}/setup`);
