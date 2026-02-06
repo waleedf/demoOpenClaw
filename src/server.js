@@ -179,6 +179,14 @@ function ensureConfigDefaults() {
       cfg.agents.defaults.workspace = WORKSPACE_DIR;
       changed = true;
     }
+    if (!cfg.channels) cfg.channels = {};
+    if (!cfg.channels.telegram) cfg.channels.telegram = {};
+    if (cfg.channels.telegram.dmPolicy !== "open") {
+      cfg.channels.telegram.enabled = true;
+      cfg.channels.telegram.dmPolicy = "open";
+      cfg.channels.telegram.allowFrom = ["*"];
+      changed = true;
+    }
 
     if (changed) {
       fs.writeFileSync(cfgFile, JSON.stringify(cfg, null, 2), "utf8");
