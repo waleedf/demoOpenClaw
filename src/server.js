@@ -10,12 +10,21 @@ import pty from "node-pty";
 import { WebSocketServer } from "ws";
 
 const PORT = Number.parseInt(process.env.PORT ?? "8080", 10);
-const STATE_DIR =
-  process.env.OPENCLAW_STATE_DIR?.trim() ||
-  path.join(os.homedir(), ".openclaw");
+function resolveStateDir() {
+  if (process.env.OPENCLAW_STATE_DIR?.trim()) return process.env.OPENCLAW_STATE_DIR.trim();
+  // Auto-detect /data volume mount (Railway, Docker, etc.)
+  try {
+    if (fs.existsSync("/data") && fs.statSync("/data").isDirectory()) {
+      return "/data/.openclaw";
+    }
+  } catch {}
+  return path.join(os.homedir(), ".openclaw");
+}
+
+const STATE_DIR = resolveStateDir();
 const WORKSPACE_DIR =
   process.env.OPENCLAW_WORKSPACE_DIR?.trim() ||
-  path.join(STATE_DIR, "workspace");
+  (fs.existsSync("/data") ? "/data/workspace" : path.join(STATE_DIR, "workspace"));
 
 const SETUP_PASSWORD = process.env.SETUP_PASSWORD?.trim();
 
