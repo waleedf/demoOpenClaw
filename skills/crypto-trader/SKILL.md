@@ -1,9 +1,10 @@
-# Crypto Trader - Technical Analysis & Trading
+---
+name: crypto-trader
+description: Analyze cryptocurrency markets using technical indicators and fundamental data. Make informed trading decisions based on real data, not vibes.
+metadata: { "openclaw": { "version": "1.0.0" } }
+---
 
-**Name:** crypto-trader
-**Version:** 1.0.0
-**Author:** Claude & User
-**Description:** Analyze cryptocurrency markets using technical indicators and fundamental data. Make informed trading decisions based on real data, not vibes.
+# Crypto Trader - Technical Analysis & Trading
 
 ## What This Skill Does
 

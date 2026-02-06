@@ -1003,11 +1003,8 @@ function syncBundledSkills() {
     const src = path.join(bundledDir, name);
     const dest = path.join(skillsDir, name);
     if (!fs.statSync(src).isDirectory()) continue;
-    if (fs.existsSync(dest)) {
-      console.log(`[skills] ${name} already on volume, skipping`);
-      continue;
-    }
-    console.log(`[skills] copying ${name} to volume`);
+    // Always overwrite to pick up skill updates
+    console.log(`[skills] syncing ${name} to volume`);
     fs.cpSync(src, dest, { recursive: true });
   }
 }
