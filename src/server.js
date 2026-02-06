@@ -972,7 +972,27 @@ app.use(async (req, res) => {
   return proxy.web(req, res, { target: GATEWAY_TARGET });
 });
 
+function ensureConfigExists() {
+  const cfgFile = configPath();
+  if (!fs.existsSync(cfgFile)) {
+    console.log(`[config] no config at ${cfgFile}, creating default`);
+    fs.mkdirSync(path.dirname(cfgFile), { recursive: true });
+    fs.writeFileSync(cfgFile, JSON.stringify({
+      gateway: {
+        mode: "local",
+        controlUi: { allowInsecureAuth: true },
+        trustedProxies: ["127.0.0.1"],
+      },
+      channels: { telegram: { enabled: true } },
+    }, null, 2), "utf8");
+  }
+}
+
 const server = app.listen(PORT, () => {
+  console.log(`[wrapper] STATE_DIR: ${STATE_DIR}`);
+  console.log(`[wrapper] config path: ${configPath()}`);
+  ensureConfigExists();
+
   console.log(`[wrapper] listening on port ${PORT}`);
   console.log(`[wrapper] setup wizard: http://localhost:${PORT}/setup`);
   console.log(`[wrapper] web TUI: ${ENABLE_WEB_TUI ? "enabled" : "disabled"}`);
