@@ -140,12 +140,42 @@ async function waitForGatewayReady(opts = {}) {
   return false;
 }
 
+function ensureConfigDefaults() {
+  const cfgFile = configPath();
+  try {
+    const raw = fs.readFileSync(cfgFile, "utf8");
+    const cfg = JSON.parse(raw);
+    let changed = false;
+
+    if (!cfg.gateway) cfg.gateway = {};
+    if (!cfg.gateway.mode) { cfg.gateway.mode = "local"; changed = true; }
+    if (!cfg.gateway.controlUi) cfg.gateway.controlUi = {};
+    if (cfg.gateway.controlUi.allowInsecureAuth !== true) {
+      cfg.gateway.controlUi.allowInsecureAuth = true;
+      changed = true;
+    }
+    if (!Array.isArray(cfg.gateway.trustedProxies) || !cfg.gateway.trustedProxies.includes("127.0.0.1")) {
+      cfg.gateway.trustedProxies = ["127.0.0.1"];
+      changed = true;
+    }
+
+    if (changed) {
+      fs.writeFileSync(cfgFile, JSON.stringify(cfg, null, 2), "utf8");
+      console.log("[config] patched config with required defaults (allowInsecureAuth, trustedProxies)");
+    }
+  } catch (err) {
+    console.warn(`[config] could not patch config defaults: ${err.message}`);
+  }
+}
+
 async function startGateway() {
   if (gatewayProc) return;
   if (!isConfigured()) throw new Error("Gateway cannot start: not configured");
 
   fs.mkdirSync(STATE_DIR, { recursive: true });
   fs.mkdirSync(WORKSPACE_DIR, { recursive: true });
+
+  ensureConfigDefaults();
 
   const args = [
     "gateway",

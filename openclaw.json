@@ -1,5 +1,14 @@
 {
   "gateway": {
-    "mode": "local"
+    "mode": "local",
+    "controlUi": {
+      "allowInsecureAuth": true
+    },
+    "trustedProxies": ["127.0.0.1"]
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true
+    }
   }
 }
