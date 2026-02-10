@@ -179,6 +179,10 @@ function ensureConfigDefaults() {
       cfg.agents.defaults.workspace = WORKSPACE_DIR;
       changed = true;
     }
+    if (!cfg.heartbeat) {
+      cfg.heartbeat = { every: "30m", activeHours: { start: "08:00", end: "23:00" } };
+      changed = true;
+    }
     if (!cfg.channels) cfg.channels = {};
     if (!cfg.channels.telegram) cfg.channels.telegram = {};
     if (cfg.channels.telegram.dmPolicy !== "open") {
@@ -1028,6 +1032,7 @@ function ensureConfigExists() {
         controlUi: { allowInsecureAuth: true },
         trustedProxies: ["127.0.0.1"],
       },
+      heartbeat: { every: "30m", activeHours: { start: "08:00", end: "23:00" } },
       channels: { telegram: { enabled: true } },
       agents: { defaults: { workspace: WORKSPACE_DIR } },
     }, null, 2), "utf8");
