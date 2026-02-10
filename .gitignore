@@ -10,7 +10,9 @@ node_modules/
 
 # API Keys
 *.key
+*.pem
 secrets/
+.keys/
 
 # OS
 .DS_Store
