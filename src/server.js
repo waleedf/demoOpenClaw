@@ -156,6 +156,9 @@ function ensureConfigDefaults() {
     const cfg = JSON.parse(raw);
     let changed = false;
 
+    // Remove stale root-level heartbeat (crashes gateway — must be under agents.defaults)
+    if (cfg.heartbeat) { delete cfg.heartbeat; changed = true; }
+
     if (!cfg.gateway) cfg.gateway = {};
     if (!cfg.gateway.mode) { cfg.gateway.mode = "local"; changed = true; }
     if (!cfg.gateway.controlUi) cfg.gateway.controlUi = {};
