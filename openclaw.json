@@ -6,13 +6,6 @@
     },
     "trustedProxies": ["127.0.0.1"]
   },
-  "heartbeat": {
-    "every": "30m",
-    "activeHours": {
-      "start": "08:00",
-      "end": "23:00"
-    }
-  },
   "channels": {
     "telegram": {
       "enabled": true
