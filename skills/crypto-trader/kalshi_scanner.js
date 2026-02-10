@@ -11,9 +11,12 @@ const https = require('https');
 
 const API_KEY_ID = 'fedaa700-afc2-4646-93d5-b2b491735d6e';
 const PRIVATE_KEY = fs.readFileSync('/data/workspace/.keys/kalshi_private_key.pem', 'utf8');
-const EDGE_THRESHOLD = 0.05; // 5% minimum edge
-const VOL_BTC = 0.50;
-const VOL_ETH = 0.55;
+const EDGE_THRESHOLD = 0.05; // 5% minimum edge (10% for <1h expiry)
+const VOL_BTC = 0.58;  // Realized vol from Binance hourly data (Feb 2026)
+const VOL_ETH = 0.80;  // Realized vol from Binance hourly data (Feb 2026)
+const SHORT_EXPIRY_VOL_MULT = 1.3;  // Vol penalty for <1h expiry (wicks/cascades)
+const SHORT_EXPIRY_HOURS = 1.0;
+const SHORT_EXPIRY_EDGE_MIN = 0.10;  // 10% min edge for <1h
 
 function signRequest(timestampMs, method, path) {
     return crypto.sign('sha256', Buffer.from(`${timestampMs}${method}${path}`), {
@@ -133,12 +136,16 @@ async function scanSeries(series, price, vol) {
         let fairProb = null;
         let betType = null;
 
+        // Apply short-expiry vol penalty
+        const effectiveVol = hoursLeft < SHORT_EXPIRY_HOURS ? vol * SHORT_EXPIRY_VOL_MULT : vol;
+        const minEdge = hoursLeft < SHORT_EXPIRY_HOURS ? SHORT_EXPIRY_EDGE_MIN : EDGE_THRESHOLD;
+
         // Bucket markets
         const bucketMatch = m.subtitle?.match(/\$([\d,]+)\s+to\s+([\d,]+)/);
         if (bucketMatch) {
             const lower = parseFloat(bucketMatch[1].replace(/,/g, ''));
             const upper = parseFloat(bucketMatch[2].replace(/,/g, ''));
-            fairProb = bucketProb(price, lower, upper, vol, hoursLeft);
+            fairProb = bucketProb(price, lower, upper, effectiveVol, hoursLeft);
             betType = 'bucket';
         }
 
@@ -146,7 +153,7 @@ async function scanSeries(series, price, vol) {
         const aboveMatch = m.subtitle?.match(/\$([\d,]+(?:\.\d+)?)\s+or\s+above/);
         if (aboveMatch) {
             const threshold = parseFloat(aboveMatch[1].replace(/,/g, ''));
-            fairProb = aboveProb(price, threshold, vol, hoursLeft);
+            fairProb = aboveProb(price, threshold, effectiveVol, hoursLeft);
             betType = 'above';
         }
 
@@ -154,7 +161,7 @@ async function scanSeries(series, price, vol) {
         const belowMatch = m.subtitle?.match(/\$([\d,]+(?:\.\d+)?)\s+or\s+below/);
         if (belowMatch) {
             const threshold = parseFloat(belowMatch[1].replace(/,/g, ''));
-            fairProb = 1 - aboveProb(price, threshold, vol, hoursLeft);
+            fairProb = 1 - aboveProb(price, threshold, effectiveVol, hoursLeft);
             betType = 'below';
         }
 
@@ -167,7 +174,7 @@ async function scanSeries(series, price, vol) {
         const edgeYes = fairProb - yesAsk;
         const edgeNo = (1 - fairProb) - noAsk;
 
-        if (edgeYes > EDGE_THRESHOLD) {
+        if (edgeYes > minEdge) {
             opportunities.push({
                 ticker: m.ticker,
                 subtitle: m.subtitle,
@@ -180,7 +187,7 @@ async function scanSeries(series, price, vol) {
             });
         }
 
-        if (edgeNo > EDGE_THRESHOLD && noAsk < 0.98) {
+        if (edgeNo > minEdge && noAsk < 0.98) {
             opportunities.push({
                 ticker: m.ticker,
                 subtitle: m.subtitle,
